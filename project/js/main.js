@@ -1,19 +1,29 @@
+
+
 class ProductList {
     constructor(container = '.products') {
         this.container = container;
         this.goods = [];
         this._fetchProducts();
-        this.render();//вывод товаров на страницу
+        // this.render();//вывод товаров на страницу
         this.sumAllProduct = 0;
         this.sumProducts();
     }
     _fetchProducts() {
-        this.goods = [
-            { id: 1, title: 'Notebook', price: 2000 },
-            { id: 2, title: 'Mouse', price: 20 },
-            { id: 3, title: 'Keyboard', price: 200 },
-            { id: 4, title: 'Gamepad', price: 50 },
-        ];
+        fetch('https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/catalogData.json')
+            .then(data => data.json())
+            .then(data => {
+                data.forEach(el => {
+                    this.goods.push({ id: el.id_product, title: el.product_name, price: el.price })
+                });
+                this.render();
+                let all_button = document.querySelectorAll('.buy-btn')
+                all_button.forEach(el => el.addEventListener('click', (e) => {
+                    basket.addProduct(e.target)
+                    basket.render()
+                }))
+            });
+
     }
 
     // добавьте для GoodsList метод, определяющий суммарную стоимость всех товаров.
@@ -27,6 +37,7 @@ class ProductList {
         for (let product of this.goods) {
             const item = new ProductItem(product);
             block.insertAdjacentHTML("beforeend", item.render());
+
             //           block.innerHTML += item.render();
         }
     }
@@ -47,8 +58,8 @@ class ProductItem {
                 <img src="${this.img}">
                 <h3>${this.title}</h3>
                 <p>${this.price}</p>
-                <button class="buy-btn">Купить</button>
-            </div>`
+                <button data-id=${this.id} data-img="${this.img}" data-title="${this.title}" data-price="${this.price}" class="buy-btn">Купить</button>
+            </div> `
     }
 }
 
@@ -61,7 +72,7 @@ class Basket {
         this.countProducts = n; // количество товаров
         this.product_list = [];
         this.sumAllProduct = 0; //сумма товаров
-        this.render(); // вывод всех товаров в корзине
+        // this.render();// вывод всех товаров в корзине
     }
 
     sumProducts() {
@@ -70,20 +81,24 @@ class Basket {
     }
 
     addProduct(product) {
-        product = product.split(/[\n\t]+/g)
-        product.pop()
-        this.countProducts += 1
-        this.product_list.push({ title: product[0], price: product[1] })
+        this.id = product.dataset['id']
+        this.img = product.dataset['img']
+        this.title = product.dataset['title']
+        this.price = product.dataset['price']
+        this.product_list.push({ id: this.id, img: this.img, title: this.title, price: this.price });
+        this.countProducts += 1;
         this.sumProducts()
+        this.render();
     }
 
     render() {
-        const block = document.querySelector('.basket');
-        block.innerHTML = ''
+        const block = document.querySelector('.cart-block');
+        block.innerHTML = '';
         for (let product of this.product_list) {
             const item = new BasketItem(product);
             block.innerHTML += item.render();
         }
+
     }
 
 }
@@ -97,36 +112,15 @@ class BasketItem {
 
     render() {
         return `<div class="product-item">
-                <img src="${this.img}">
+            <img src="${this.img}">
                 <h3>${this.title}</h3>
                 <p>${this.price}</p>
             </div>`
     }
 }
 
-let basket = new Basket(0)
-let all_button = document.querySelectorAll('.buy-btn')
-all_button.forEach(el => el.addEventListener('click', (e) => {
-    basket.addProduct(e.target.parentElement.innerText)
-    basket.render()
-}))
+let basket = new Basket(0);
 
-
-//const products = [
-//    {id: 1, title: 'Notebook', price: 2000},
-//    {id: 2, title: 'Mouse', price: 20},
-//    {id: 3, title: 'Keyboard', price: 200},
-//    {id: 4, title: 'Gamepad', price: 50},
-//];
-//
-//const renderProduct = (product,img='https://placehold.it/200x150') => {
-//    return `<div class="product-item">
-//                <img src="${img}">
-//                <h3>${product.title}</h3>
-//                <p>${product.price}</p>
-//                <button class="buy-btn">Купить</button>
-//            </div>`
-//};
-//const renderPage = list => document.querySelector('.products').innerHTML = list.map(item => renderProduct(item)).join('');
-//
-//renderPage(products);
+document.querySelector('.btn-cart').addEventListener('click', () => {
+    document.querySelector('.cart-block').classList.toggle('invisible');
+});
