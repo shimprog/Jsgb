@@ -1,0 +1,16 @@
+<script>
+  let detailProduct
+  async function getDetails() {
+    detailProduct = await fetch('texttoreplace.txt').then(res => res.text());
+    console.log(detailProduct);
+  }
+  getDetails();
+  setTimeout(() => {
+    detailProduct = detailProduct.replaceAll('\'', '\"')
+    console.log('1. Дан большой текст, в котором для оформления прямой речи используются одинарные кавычки.Придумать шаблон, который заменяет одинарные кавычки на двойные.');
+    console.log(detailProduct);
+    console.log("2. Улучшить шаблон так, чтобы в конструкциях типа aren't одинарная кавычка не заменялась на двойную");
+    detailProduct = detailProduct.replace(/\b"/g, "'");
+    console.log(detailProduct);
+  }, 100)
+</script>
